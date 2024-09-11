@@ -1,0 +1,30 @@
+name: Sync Submodule
+
+env:
+    username: 'acalleja' # The user provided by the platform administrator
+    dag: 'llm_training_dag_over_k8s' # The name of the DAG in the template is the name of the function with the @dag before it.
+                      # You can specify more than 1 by separating the names with a space.
+
+on:
+    push:
+        paths:
+            - '**.py'
+
+jobs:
+    trigger_workflow:
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Trigger central repo workflow
+              uses: convictional/trigger-workflow-and-wait@v1.6.1
+              with:
+                  owner: CLARUS-Project
+                  repo: ai-toolkit-central
+                  github_token: ${{  secrets.CENTRAL_REPO_TOKEN  }}
+                  workflow_file_name: sync_submodule.yml 
+                  ref: main
+                  wait_interval: 10
+                  propagate_failure: true
+                  trigger_workflow: true
+                  wait_workflow: true
+                  client_payload: '{"submodule":"https://github.com/${{  github.repository  }}.git","submodule_path":"${{  github.repository  }}","branch":"${{  github.ref_name  }}","username":"${{ env.username }}","dag":"${{ env.dag }}"}'
