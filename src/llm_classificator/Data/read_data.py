@@ -1,10 +1,11 @@
+from typing import Tuple
 import requests
 import pandas as pd
 from io import StringIO
 import config
 
 
-def read_data() -> pd.DataFrame:
+def read_data() -> Tuple[pd.DataFrame, pd.DataFrame]:
     general_questions_url = "https://api-generator.retool.com/VAtSxo/general_questions"
     specific_questions_url = (
         "https://api-generator.retool.com/yJCzkf/specific_questions"
