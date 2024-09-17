@@ -21,9 +21,6 @@ from airflow.decorators import dag, task
 from kubernetes.client import models as k8s
 from airflow.models import Variable
 
-# define src path
-src_path = "/git/clarus-llm-dag/src/llm_classificator"
-
 
 @dag(
     description="LLMOps lifecycle",
@@ -88,7 +85,7 @@ def llm_training_dag_over_k8s():
         import uuid
         import pickle
 
-        sys.path.insert(1, src_path)
+        sys.path.insert(1, "/git/clarus-llm-dag/src/llm_classificator")
         from Data.read_general_data import read_general_data
         from Data.read_specific_data import read_specific_data
         from Process.data_processing import data_processing
@@ -127,7 +124,7 @@ def llm_training_dag_over_k8s():
         import redis
         import pickle
 
-        sys.path.insert(1, src_path)
+        sys.path.insert(1, "/git/clarus-llm-dag/src/llm_classificator")
         from Models.XLNet_model_training import xlNet_model_training
 
         redis_client = redis.StrictRedis(
