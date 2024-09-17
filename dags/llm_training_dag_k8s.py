@@ -86,8 +86,7 @@ def llm_training_dag_over_k8s():
         import pickle
 
         sys.path.insert(1, "/git/clarus-llm-dag/src/llm_classificator")
-        from Data.read_general_data import read_general_data
-        from Data.read_specific_data import read_specific_data
+        from Data.read_data import read_data
         from Process.data_processing import data_processing
         from Process.create_dataloaders import create_dataloaders
 
@@ -97,8 +96,7 @@ def llm_training_dag_over_k8s():
             password="pass",
         )
 
-        general_df = read_general_data()
-        specific_df = read_specific_data()
+        general_df, specific_df = read_data()
         dp = data_processing(general_df, specific_df)
         dl = create_dataloaders(dp)
 
