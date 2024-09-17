@@ -25,11 +25,26 @@ from airflow.models import Variable
 @dag(
     description="LLMOps lifecycle",
     schedule_interval="0 12 * * *",
-    start_date=datetime(2024, 12, 12),
+    start_date=datetime(2022, 1, 1),
     catchup=False,
     tags=["demo", "llm"],
 )
 def llm_training_dag_over_k8s():
+
+    env_vars = {
+        "POSTGRES_USERNAME": Variable.get("POSTGRES_USERNAME"),
+        "POSTGRES_PASSWORD": Variable.get("POSTGRES_PASSWORD"),
+        "POSTGRES_DATABASE": Variable.get("POSTGRES_DATABASE"),
+        "POSTGRES_HOST": Variable.get("POSTGRES_HOST"),
+        "POSTGRES_PORT": Variable.get("POSTGRES_PORT"),
+        "TRUE_CONNECTOR_EDGE_IP": Variable.get("CONNECTOR_EDGE_IP"),
+        "TRUE_CONNECTOR_EDGE_PORT": Variable.get("IDS_EXTERNAL_ECC_IDS_PORT"),
+        "TRUE_CONNECTOR_CLOUD_IP": Variable.get("CONNECTOR_CLOUD_IP"),
+        "TRUE_CONNECTOR_CLOUD_PORT": Variable.get("IDS_PROXY_PORT"),
+        "MLFLOW_ENDPOINT": Variable.get("MLFLOW_ENDPOINT"),
+        "MLFLOW_TRACKING_USERNAME": Variable.get("MLFLOW_TRACKING_USERNAME"),
+        "MLFLOW_TRACKING_PASSWORD": Variable.get("MLFLOW_TRACKING_PASSWORD"),
+    }
 
     volume_mount = k8s.V1VolumeMount(name="dag-dependencies", mount_path="/git")
 
@@ -51,21 +66,6 @@ def llm_training_dag_over_k8s():
         ],
         volume_mounts=init_container_volume_mounts,
     )
-
-    env_vars = {
-        "POSTGRES_USERNAME": Variable.get("POSTGRES_USERNAME"),
-        "POSTGRES_PASSWORD": Variable.get("POSTGRES_PASSWORD"),
-        "POSTGRES_DATABASE": Variable.get("POSTGRES_DATABASE"),
-        "POSTGRES_HOST": Variable.get("POSTGRES_HOST"),
-        "POSTGRES_PORT": Variable.get("POSTGRES_PORT"),
-        "TRUE_CONNECTOR_EDGE_IP": Variable.get("CONNECTOR_EDGE_IP"),
-        "TRUE_CONNECTOR_EDGE_PORT": Variable.get("IDS_EXTERNAL_ECC_IDS_PORT"),
-        "TRUE_CONNECTOR_CLOUD_IP": Variable.get("CONNECTOR_CLOUD_IP"),
-        "TRUE_CONNECTOR_CLOUD_PORT": Variable.get("IDS_PROXY_PORT"),
-        "MLFLOW_ENDPOINT": Variable.get("MLFLOW_ENDPOINT"),
-        "MLFLOW_TRACKING_USERNAME": Variable.get("MLFLOW_TRACKING_USERNAME"),
-        "MLFLOW_TRACKING_PASSWORD": Variable.get("MLFLOW_TRACKING_PASSWORD"),
-    }
 
     # Define as many task as needed
     @task.kubernetes(
@@ -135,6 +135,7 @@ def llm_training_dag_over_k8s():
 
         data = redis_client.get("data-" + read_id)
         res = pickle.loads(data)
+        redis_client.delete("data-" + read_id)
 
         return xlNet_model_training(res)
 
