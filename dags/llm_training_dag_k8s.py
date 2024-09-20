@@ -48,13 +48,9 @@ def llm_training_dag_over_k8s():
 
     volume_mount = k8s.V1VolumeMount(name="dag-dependencies", mount_path="/git")
 
-    init_container_volume_mounts = [
-        k8s.V1VolumeMount(mount_path="/git", name="dag-dependencies")
-    ]
+    init_container_volume_mounts = [k8s.V1VolumeMount(mount_path="/git", name="dag-dependencies")]
 
-    volume = k8s.V1Volume(
-        name="dag-dependencies", empty_dir=k8s.V1EmptyDirVolumeSource()
-    )
+    volume = k8s.V1Volume(name="dag-dependencies", empty_dir=k8s.V1EmptyDirVolumeSource())
 
     init_container = k8s.V1Container(
         name="git-clone",
@@ -69,7 +65,7 @@ def llm_training_dag_over_k8s():
 
     # Define as many task as needed
     @task.kubernetes(
-        image="clarusproject/dag-image:1.0.0-slim",
+        image="alejandrocalleja/xlnet-dag:latest",
         name="read_data",
         task_id="read_data",
         namespace="airflow",
@@ -107,7 +103,7 @@ def llm_training_dag_over_k8s():
         return read_id
 
     @task.kubernetes(
-        image="clarusproject/dag-image:1.0.0-slim",
+        image="alejandrocalleja/xlnet-dag:latest",
         name="xlNet_model_training",
         task_id="xlNet_model_training",
         namespace="airflow",
