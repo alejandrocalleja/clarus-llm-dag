@@ -120,16 +120,14 @@ def llm_training_dag_over_k8s():
         name="xlNet_model_training",
         task_id="xlNet_model_training",
         namespace="airflow",
-        get_logs=True,
         init_containers=[init_container],
         image_pull_policy="Always",
         volumes=[volume],
         volume_mounts=[volume_mount],
         full_pod_spec=pod_spec,
-        dxcom_push=True,
+        do_xcom_push=True,
         container_resources=k8s.V1ResourceRequirements(
-            requests={"cpu": "1", "nvidia.com/gpu": "1"},
-            limits={"cpu": "1.5", "nvidia.com/gpu": "1"},
+            requests={"cpu": "1", "nvidia.com/gpu": "1"}, limits={"cpu": "1.5", "nvidia.com/gpu": "1"}
         ),
         priority_class_name="medium-priority",
         env_vars=env_vars,
