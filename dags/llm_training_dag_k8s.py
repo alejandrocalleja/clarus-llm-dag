@@ -63,6 +63,19 @@ def llm_training_dag_over_k8s():
         volume_mounts=init_container_volume_mounts,
     )
 
+    pod_spec = k8s.V1Pod(
+        api_version="v1",
+        kind="Pod",
+        spec=k8s.V1PodSpec(
+            runtime_class_name="nvidia",  # Establecer runtimeClassName a 'nvidia'
+            containers=[
+                k8s.V1Container(
+                    name="base",
+                )
+            ],
+        ),
+    )
+
     # Define as many task as needed
     @task.kubernetes(
         image="alejandrocalleja/xlnet-dag:latest",
@@ -109,8 +122,16 @@ def llm_training_dag_over_k8s():
         namespace="airflow",
         get_logs=True,
         init_containers=[init_container],
+        image_pull_policy="Always",
         volumes=[volume],
         volume_mounts=[volume_mount],
+        full_pod_spec=pod_spec,
+        dxcom_push=True,
+        container_resources=k8s.V1ResourceRequirements(
+            requests={"cpu": "1", "nvidia.com/gpu": "1"},
+            limits={"cpu": "1.5", "nvidia.com/gpu": "1"},
+        ),
+        priority_class_name="medium-priority",
         env_vars=env_vars,
     )
     def xlNet_model_training_task(read_id=None):
