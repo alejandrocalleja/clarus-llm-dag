@@ -16,9 +16,7 @@ def train_epoch(model, dataloader, optimizer, device):
         attention_mask = batch["attention_mask"].to(device)
         labels = batch["labels"].to(device)
 
-        outputs = model(
-            input_ids=input_ids, attention_mask=attention_mask, labels=labels
-        )
+        outputs = model(input_ids=input_ids, attention_mask=attention_mask, labels=labels)
 
         loss = outputs.loss
         total_loss += loss.item()
@@ -59,9 +57,7 @@ def xlNet_model_training(data: Dict[str, Any], epochs: int):
     model = model.to(device)
 
     for epoch in range(epochs):
-        train_loss, train_accuracy = train_epoch(
-            model, train_dataloader, optimizer, device
-        )
+        train_loss, train_accuracy = train_epoch(model, train_dataloader, optimizer, device)
         print(f"Epoch {epoch + 1}/{epochs}, Train Loss: {train_loss}")
 
     eval_loss, eval_accuracy = utils.eval_model(model, eval_dataloader, device)
@@ -69,8 +65,6 @@ def xlNet_model_training(data: Dict[str, Any], epochs: int):
     training_metrics = {"train_loss": train_loss, "train_accuracy": train_accuracy}
     validation_metrics = {"eval_loss": eval_loss, "eval_accuracy": eval_accuracy}
 
-    last_run = utils.track_run(
-        run_name, estimator_name, hyperparams, training_metrics, validation_metrics, lr
-    )
+    last_run = utils.track_run(run_name, estimator_name, hyperparams, training_metrics, validation_metrics, lr)
 
-    # return model
+    return "training done"
