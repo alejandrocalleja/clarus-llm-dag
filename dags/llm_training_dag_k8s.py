@@ -87,10 +87,6 @@ def llm_training_dag_over_k8s():
         volume_mounts=[volume_mount],
         do_xcom_push=True,
         env_vars=env_vars,
-        full_pod_spec=pod_spec,
-        container_resources=k8s.V1ResourceRequirements(
-            requests={"cpu": "1", "nvidia.com/gpu": "1"}, limits={"cpu": "1.5", "nvidia.com/gpu": "1"}
-        ),
     )
     def read_data_process_task():
         import sys
@@ -101,8 +97,6 @@ def llm_training_dag_over_k8s():
         sys.path.insert(1, "/git/clarus-llm-dag/src/llm_classificator")
         from Data.read_data import read_data
         from Process.data_processing import data_processing
-        from Process.create_dataloaders import create_dataloaders
-        from Models.XLNet_model_training import xlNet_model_training
 
         redis_client = redis.StrictRedis(
             host="redis-headless.redis.svc.cluster.local",
@@ -112,11 +106,10 @@ def llm_training_dag_over_k8s():
 
         general_df, specific_df = read_data()
         dp = data_processing(general_df, specific_df)
-        dl = create_dataloaders(dp)
-        print(xlNet_model_training(dl))
+
         read_id = str(uuid.uuid4())
 
-        redis_client.set("data-" + read_id, pickle.dumps(dl))
+        redis_client.set("data-" + read_id, pickle.dumps(dp))
 
         return read_id
 
@@ -144,6 +137,7 @@ def llm_training_dag_over_k8s():
 
         sys.path.insert(1, "/git/clarus-llm-dag/src/llm_classificator")
         from Models.XLNet_model_training import xlNet_model_training
+        from Process.create_dataloaders import create_dataloaders
 
         redis_client = redis.StrictRedis(
             host="redis-headless.redis.svc.cluster.local",
@@ -153,9 +147,9 @@ def llm_training_dag_over_k8s():
 
         data = redis_client.get("data-" + read_id)
         res = pickle.loads(data)
+        dl = create_dataloaders(res)
+        xlNet_model_training(dl)
         redis_client.delete("data-" + read_id)
-
-        return xlNet_model_training(res)
 
     # Instantiate each task and define task dependencies
     processing_result = read_data_process_task()
