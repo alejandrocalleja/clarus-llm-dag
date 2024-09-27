@@ -87,6 +87,10 @@ def llm_training_dag_over_k8s():
         volume_mounts=[volume_mount],
         do_xcom_push=True,
         env_vars=env_vars,
+        full_pod_spec=pod_spec,
+        container_resources=k8s.V1ResourceRequirements(
+            requests={"cpu": "1", "nvidia.com/gpu": "1"}, limits={"cpu": "1.5", "nvidia.com/gpu": "1"}
+        ),
     )
     def read_data_process_task():
         import sys

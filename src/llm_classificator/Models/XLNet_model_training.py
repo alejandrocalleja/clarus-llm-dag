@@ -34,7 +34,7 @@ def train_epoch(model, dataloader, optimizer, device):
     return train_loss, train_accuracy
 
 
-def xlNet_model_training(data: Dict[str, Any], epochs: int):
+def xlNet_model_training(data: Dict[str, Any], epochs=5):
 
     run_name = "XLNet_model"
     estimator_name = "XLNet"
