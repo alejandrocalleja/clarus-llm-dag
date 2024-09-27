@@ -2,8 +2,26 @@ from transformers import XLNetForSequenceClassification, AdamW
 from typing import Any, Dict
 from datetime import datetime
 from tqdm import tqdm
+from torch import cuda, bfloat16
 import torch
 from Models import utils
+
+
+def check_if_gpu_available():
+    # Check if CUDA (GPU) is available
+    if torch.cuda.is_available():
+        # Get the current CUDA device
+        device = torch.cuda.current_device()
+        print(f"Using CUDA device: {torch.cuda.get_device_name(device)}")
+
+        # Get GPU memory usage
+        print(f"Total GPU Memory: {torch.cuda.get_device_properties(device).total_memory / 1e9} GB")
+        print(f"Allocated GPU Memory: {torch.cuda.memory_allocated(device) / 1e9} GB")
+        print(f"Reserved GPU Memory: {torch.cuda.memory_reserved(device) / 1e9} GB")
+
+    # If CUDA is not available, print a message
+    else:
+        print("CUDA is not available. Using CPU.")
 
 
 def train_epoch(model, dataloader, optimizer, device):
@@ -35,7 +53,7 @@ def train_epoch(model, dataloader, optimizer, device):
 
 
 def xlNet_model_training(data: Dict[str, Any], epochs=5):
-
+    check_if_gpu_available()
     run_name = "XLNet_model"
     estimator_name = "XLNet"
     hyperparams = {"epochs": epochs, "optimizer": "AdamW"}
