@@ -1,4 +1,4 @@
-FROM nvidia/cuda:12.6.1-base-ubuntu22.04
+FROM nvidia/cuda:11.4.3-base-ubuntu20.04
 
 ENV DEBIAN_FRONTEND=noninteractive
 ENV TZ=Etc/UTC

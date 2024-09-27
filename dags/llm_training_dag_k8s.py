@@ -108,7 +108,7 @@ def llm_training_dag_over_k8s():
         general_df, specific_df = read_data()
         dp = data_processing(general_df, specific_df)
         dl = create_dataloaders(dp)
-
+        print(xlNet_model_training_task(dl))
         read_id = str(uuid.uuid4())
 
         redis_client.set("data-" + read_id, pickle.dumps(dl))
