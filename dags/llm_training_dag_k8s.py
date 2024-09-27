@@ -98,6 +98,7 @@ def llm_training_dag_over_k8s():
         from Data.read_data import read_data
         from Process.data_processing import data_processing
         from Process.create_dataloaders import create_dataloaders
+        from Models.XLNet_model_training import xlNet_model_training
 
         redis_client = redis.StrictRedis(
             host="redis-headless.redis.svc.cluster.local",
@@ -108,8 +109,7 @@ def llm_training_dag_over_k8s():
         general_df, specific_df = read_data()
         dp = data_processing(general_df, specific_df)
         dl = create_dataloaders(dp)
-        # minor changes
-        print(xlNet_model_training_task(dl))
+        print(xlNet_model_training(dl))
         read_id = str(uuid.uuid4())
 
         redis_client.set("data-" + read_id, pickle.dumps(dl))
