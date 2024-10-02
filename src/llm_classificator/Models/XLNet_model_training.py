@@ -83,6 +83,6 @@ def xlNet_model_training(data: Dict[str, Any], epochs=5):
     training_metrics = {"train_loss": train_loss, "train_accuracy": train_accuracy}
     validation_metrics = {"eval_loss": eval_loss, "eval_accuracy": eval_accuracy}
 
-    last_run = utils.track_run(run_name, estimator_name, hyperparams, training_metrics, validation_metrics, lr)
+    utils.track_run(run_name, model_name, estimator_name, hyperparams, training_metrics, validation_metrics, model)
 
     return "training done"

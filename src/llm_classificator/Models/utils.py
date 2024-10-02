@@ -1,15 +1,34 @@
 import numpy as np
 import warnings
 from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
+
 import mlflow
 import mlflow.sklearn
 from mlflow.tracking.client import MlflowClient
+from mlflow.models.signature import ModelSignature
+from mlflow.types import ColSpec, DataType, ParamSchema, ParamSpec, Schema
+
 from tqdm import tqdm
 import torch
 from urllib.parse import urlparse
 import time
-
 import config
+import pandas as pd
+
+from custom_pyfunc import MPT
+
+# Define input and output schema
+input_schema = Schema(
+    [
+        ColSpec(DataType.string, "question"),
+    ]
+)
+output_schema = Schema([ColSpec(DataType.string, "candidate")])
+
+signature = ModelSignature(inputs=input_schema, outputs=output_schema)
+
+# Define input example
+input_example = pd.DataFrame({"prompt": ["What is machine learning?"]})
 
 
 def eval_metrics(actual, pred, mode="test"):
@@ -30,9 +49,7 @@ def eval_model(model, dataloader, device):
             attention_mask = batch["attention_mask"].to(device)
             labels = batch["labels"].to(device)
 
-            outputs = model(
-                input_ids=input_ids, attention_mask=attention_mask, labels=labels
-            )
+            outputs = model(input_ids=input_ids, attention_mask=attention_mask, labels=labels)
 
             loss = outputs.loss
             total_loss += loss.item()
@@ -47,6 +64,7 @@ def eval_model(model, dataloader, device):
 
 def track_run(
     run_name: str,
+    model_name: str,
     estimator_name: str,
     hyperparams: dict,
     training_metrics: dict,
@@ -64,31 +82,47 @@ def track_run(
         mlflow.set_experiment(config.MLFLOW_EXPERIMENT)
     warnings.filterwarnings("ignore")
 
-    mlflow.start_run(run_name=run_name, tags={"estimator_name": estimator_name})
+    # mlflow.start_run(run_name=run_name, tags={"estimator_name": estimator_name})
 
-    active_run = mlflow.active_run()
+    # active_run = mlflow.active_run()
 
-    # track hypreparameters
-    for key, value in hyperparams.items():
-        mlflow.log_param(key, value)
+    # # track hypreparameters
+    # for key, value in hyperparams.items():
+    #     mlflow.log_param(key, value)
 
-    # Track training metrics
-    for key, value in training_metrics.items():
-        mlflow.log_metric(key, value)
+    # # Track training metrics
+    # for key, value in training_metrics.items():
+    #     mlflow.log_metric(key, value)
 
-    # Track validation metrics
-    for key, value in validation_metrics.items():
-        mlflow.log_metric(key, value)
+    # # Track validation metrics
+    # for key, value in validation_metrics.items():
+    #     mlflow.log_metric(key, value)
 
-    # Model registry
-    tracking_url_type_store = urlparse(mlflow.get_tracking_uri()).scheme
-    if tracking_url_type_store != "file":
-        mlflow.sklearn.log_model(model, "model", registered_model_name=run_name)
-    else:
-        mlflow.sklearn.log_model(model, "model")
+    # # Model registry
+    # tracking_url_type_store = urlparse(mlflow.get_tracking_uri()).scheme
+    # if tracking_url_type_store != "file":
+    #     mlflow.sklearn.log_model(model, "model", registered_model_name=run_name)
+    # else:
+    #     mlflow.sklearn.log_model(model, "model")
 
-    # End tracking
-    mlflow.end_run()
+    # # End tracking
+    # mlflow.end_run()
+
+    while mlflow.active_run():
+        model_info = mlflow.pyfunc.log_model(
+            model_name,
+            python_model=MPT(),
+            artifacts={},
+            pip_requirements=[
+                f"torch=={torch_version}",
+                f"transformers=={transformers.__version__}",
+                f"accelerate=={accelerate.__version__}",
+                "einops",
+                "sentencepiece",
+            ],
+            input_example=input_example,
+            signature=signature,
+        )
 
     # Print report
     tr_keys = list(training_metrics.keys())
@@ -101,6 +135,3 @@ def track_run(
     print("  VALIDATION:")
     print("     LOSS: %s" % validation_metrics[tst_keys[0]])
     print("     ACCURACY: %s" % validation_metrics[tst_keys[1]])
-
-    # retur the run id
-    return active_run
