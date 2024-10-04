@@ -30,7 +30,7 @@ output_schema = Schema([ColSpec(DataType.string, "candidate")])
 signature = ModelSignature(inputs=input_schema, outputs=output_schema)
 
 # Define input example
-input_example = pd.DataFrame({"prompt": ["What is machine learning?"]})
+input_example = pd.DataFrame({"question": ["What is machine learning?"]})
 
 
 def eval_metrics(actual, pred, mode="test"):

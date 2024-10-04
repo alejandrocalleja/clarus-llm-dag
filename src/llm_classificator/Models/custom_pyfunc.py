@@ -58,7 +58,7 @@ class MPT(mlflow.pyfunc.PythonModel):
         This method generates prediction for the given input.
         """
         # Build the prompt
-        preprocessed_question = self._build_prompt(question, self.tokenizer, max_len)
+        preprocessed_question = self._build_prompt(question, max_len)
 
         input_ids = preprocessed_question["input_ids"].to(device)
         attention_mask = preprocessed_question["attention_mask"].to(device)
