@@ -84,22 +84,6 @@ def track_run(
         mlflow.set_experiment(config.MLFLOW_EXPERIMENT)
     warnings.filterwarnings("ignore")
 
-    mlflow.start_run(run_name=run_name, tags={"estimator_name": estimator_name})
-
-    # active_run = mlflow.active_run()
-
-    # # track hypreparameters
-    # for key, value in hyperparams.items():
-    #     mlflow.log_param(key, value)
-
-    # # Track training metrics
-    # for key, value in training_metrics.items():
-    #     mlflow.log_metric(key, value)
-
-    # # Track validation metrics
-    # for key, value in validation_metrics.items():
-    #     mlflow.log_metric(key, value)
-
     # # Model registry
     # tracking_url_type_store = urlparse(mlflow.get_tracking_uri()).scheme
     # if tracking_url_type_store != "file":
@@ -107,40 +91,40 @@ def track_run(
     # else:
     #     mlflow.sklearn.log_model(model, "model")
 
-    # # End tracking
-    # mlflow.end_run()
+    mlflow.start_run(run_name=run_name, tags={"estimator_name": estimator_name})
 
-    while mlflow.active_run():
-        # track hypreparameters
-        for key, value in hyperparams.items():
-            mlflow.log_param(key, value)
+    active_run = mlflow.active_run()
+    # track hypreparameters
+    for key, value in hyperparams.items():
+        mlflow.log_param(key, value)
 
-        # Track training metrics
-        for key, value in training_metrics.items():
-            mlflow.log_metric(key, value)
+    # Track training metrics
+    for key, value in training_metrics.items():
+        mlflow.log_metric(key, value)
 
-        # Track validation metrics
-        for key, value in validation_metrics.items():
-            mlflow.log_metric(key, value)
+    # Track validation metrics
+    for key, value in validation_metrics.items():
+        mlflow.log_metric(key, value)
 
-        tracking_url_type_store = urlparse(mlflow.get_tracking_uri()).scheme
-        if tracking_url_type_store != "file":
-            mlflow.pyfunc.log_model(
-                model_name,
-                python_model=MPT(),
-                artifacts={},
-                input_example=input_example,
-                signature=signature,
-                registered_model_name=run_name,
-            )
-        else:
-            mlflow.pyfunc.log_model(
-                model_name,
-                python_model=MPT(),
-                artifacts={},
-                input_example=input_example,
-                signature=signature,
-            )
+    # Model registry
+    tracking_url_type_store = urlparse(mlflow.get_tracking_uri()).scheme
+    if tracking_url_type_store != "file":
+        mlflow.pyfunc.log_model(
+            model_name,
+            python_model=MPT(),
+            artifacts={},
+            input_example=input_example,
+            signature=signature,
+            registered_model_name=run_name,
+        )
+    else:
+        mlflow.pyfunc.log_model(
+            model_name,
+            python_model=MPT(),
+            artifacts={},
+            input_example=input_example,
+            signature=signature,
+        )
 
     mlflow.end_run()
 
