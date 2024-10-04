@@ -14,8 +14,10 @@ from urllib.parse import urlparse
 import time
 import config
 import pandas as pd
+import sys
 
-from custom_pyfunc import MPT
+sys.path.insert(1, "/git/clarus-llm-dag/src/llm_classificator")
+from Models.custom_pyfunc import MPT
 
 # Define input and output schema
 input_schema = Schema(

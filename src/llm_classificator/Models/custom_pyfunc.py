@@ -17,7 +17,8 @@ class MPT(mlflow.pyfunc.PythonModel):
         # NB: If you do not have a CUDA-capable device or have torch installed with CUDA support
         # this setting will not function correctly. Setting device to 'cpu' is valid, but
         # the performance will be very slow.
-        self.model.to(device="cuda")
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        self.model.to(device=device)
         # If running on a GPU-compatible environment, uncomment the following line:
         # self.model.to(device="cuda")
 
