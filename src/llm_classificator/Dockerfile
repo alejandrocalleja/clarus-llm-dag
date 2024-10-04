@@ -43,8 +43,7 @@ WORKDIR /app
 COPY requirements.txt .
 
 RUN pip install --upgrade pip
-RUN pip install --no-cache-dir torch \
-    torchvision \
+RUN pip install --no-cache-dir torchvision \
     redis \
     mlflow \
     pandas \
