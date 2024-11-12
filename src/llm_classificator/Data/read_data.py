@@ -20,7 +20,7 @@ def read_data() -> Tuple[pd.DataFrame, pd.DataFrame]:
         # Convert the JSON data to a DataFrame
         general_df = pd.DataFrame(general_questions)
         specific_df = pd.DataFrame(specific_questions)
-        # remove the id column
+
         general_df = general_df.drop(columns=["id"])
         specific_df = specific_df.drop(columns=["id"])
 
